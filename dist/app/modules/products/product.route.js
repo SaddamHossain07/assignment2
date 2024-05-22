@@ -7,8 +7,10 @@ exports.ProductRoutes = void 0;
 const express_1 = __importDefault(require("express"));
 const product_controller_1 = require("./product.controller");
 const router = express_1.default.Router();
-// routes will be goes here
+// product routes will be goes here
 router.post("/", product_controller_1.ProductController.createProduct);
 router.get("/", product_controller_1.ProductController.getAllProduct);
 router.get("/:productId", product_controller_1.ProductController.getASingleProduct);
+router.put("/:productId", product_controller_1.ProductController.updateProduct);
+router.delete("/:productId", product_controller_1.ProductController.deleteProduct);
 exports.ProductRoutes = router;

@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProductController = void 0;
 const product_service_1 = require("./product.service");
+// create a product
 const createProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const productData = req.body;
@@ -30,6 +31,7 @@ const createProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         });
     }
 });
+// retrive all product
 const getAllProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const result = yield product_service_1.ProductServices.getAllProductFromDb();
@@ -48,6 +50,7 @@ const getAllProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         });
     }
 });
+// retrive a single product
 const getASingleProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { productId } = req.params;
@@ -67,8 +70,51 @@ const getASingleProduct = (req, res) => __awaiter(void 0, void 0, void 0, functi
         });
     }
 });
+// update product
+const updateProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { productId } = req.params;
+        const productData = req.body;
+        const result = yield product_service_1.ProductServices.updateProductIntoDb(productId, productData);
+        // sending respons
+        res.status(200).json({
+            success: true,
+            message: "Products updated successfully!",
+            data: result,
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            success: true,
+            message: "something went wrong",
+            error: error,
+        });
+    }
+});
+// delete product
+const deleteProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { productId } = req.params;
+        const result = yield product_service_1.ProductServices.deleteProductFromDb(productId);
+        // sending respons
+        res.status(200).json({
+            success: true,
+            message: "Product deleted successfully!",
+            data: result,
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            success: true,
+            message: "something went wrong",
+            error: error,
+        });
+    }
+});
 exports.ProductController = {
     createProduct,
     getAllProduct,
     getASingleProduct,
+    updateProduct,
+    deleteProduct,
 };

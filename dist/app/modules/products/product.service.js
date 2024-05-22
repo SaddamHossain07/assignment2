@@ -11,20 +11,35 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProductServices = void 0;
 const product_model_1 = require("./product.model");
+// create a product into db
 const createProductIntoDb = (product) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield product_model_1.ProductModel.create(product);
     return result;
 });
+// retrive all product from db
 const getAllProductFromDb = () => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield product_model_1.ProductModel.find();
     return result;
 });
+// retrive a single product from db
 const getASingleProductFromDb = (_id) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield product_model_1.ProductModel.findOne({ _id });
     return result;
+});
+// update product into db
+const updateProductIntoDb = (productId, productData) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield product_model_1.ProductModel.updateOne({ _id: productId }, { $set: productData });
+    return result;
+});
+// delete product from db
+const deleteProductFromDb = (_id) => __awaiter(void 0, void 0, void 0, function* () {
+    yield product_model_1.ProductModel.deleteOne({ _id });
+    return null;
 });
 exports.ProductServices = {
     createProductIntoDb,
     getAllProductFromDb,
     getASingleProductFromDb,
+    updateProductIntoDb,
+    deleteProductFromDb,
 };

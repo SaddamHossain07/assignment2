@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { ProductServices } from "./product.service";
 
+// create a product
 const createProduct = async (req: Request, res: Response) => {
   try {
     const productData = req.body;
@@ -21,6 +22,7 @@ const createProduct = async (req: Request, res: Response) => {
   }
 };
 
+// retrive all product
 const getAllProduct = async (req: Request, res: Response) => {
   try {
     const result = await ProductServices.getAllProductFromDb();
@@ -40,6 +42,7 @@ const getAllProduct = async (req: Request, res: Response) => {
   }
 };
 
+// retrive a single product
 const getASingleProduct = async (req: Request, res: Response) => {
   try {
     const { productId } = req.params;
@@ -60,6 +63,33 @@ const getASingleProduct = async (req: Request, res: Response) => {
   }
 };
 
+// update product
+const updateProduct = async (req: Request, res: Response) => {
+  try {
+    const { productId } = req.params;
+    const productData = req.body;
+
+    const result = await ProductServices.updateProductIntoDb(
+      productId,
+      productData
+    );
+
+    // sending respons
+    res.status(200).json({
+      success: true,
+      message: "Products updated successfully!",
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: true,
+      message: "something went wrong",
+      error: error,
+    });
+  }
+};
+
+// delete product
 const deleteProduct = async (req: Request, res: Response) => {
   try {
     const { productId } = req.params;
@@ -84,5 +114,6 @@ export const ProductController = {
   createProduct,
   getAllProduct,
   getASingleProduct,
+  updateProduct,
   deleteProduct,
 };
