@@ -18,7 +18,10 @@ const inventorySchema = new Schema<TInventory>(
 );
 
 const productSchema = new Schema<TProduct>({
-  name: String,
+  name: {
+    type: String,
+    index: "text",
+  },
   description: String,
   price: Number,
   category: String,

@@ -11,7 +11,10 @@ const inventorySchema = new mongoose_1.Schema({
     inStock: Boolean,
 }, { _id: false });
 const productSchema = new mongoose_1.Schema({
-    name: String,
+    name: {
+        type: String,
+        index: "text",
+    },
     description: String,
     price: Number,
     category: String,

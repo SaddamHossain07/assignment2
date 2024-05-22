@@ -22,46 +22,38 @@ const createOrder = async (req: Request, res: Response) => {
   }
 };
 
-// retrive all order
+// retrive all orders
 const getAllOrder = async (req: Request, res: Response) => {
   try {
-    const result = await OrderServices.getAllOrderFromDb();
+    // if query exists
+    if (req.query.email) {
+      const { email } = req.query;
+      const result = await OrderServices.getOrdersByEmailFromDb(email);
 
-    // sending respons
-    res.status(200).json({
-      success: true,
-      message: "Order fetched successfully!",
-      data: result,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: true,
-      message: "something went wrong",
-      error: error,
-    });
-  }
-};
+      // Check if there is no order with this email
+      if (result.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "Order not found",
+        });
+      }
 
-// retrive orders by user email
-const getOrdersByUserEmail = async (req: Request, res: Response) => {
-  try {
-    const { email } = req.query;
-    const result = await OrderServices.getOrdersByEmailFromDb(email);
+      // Sending response
+      res.status(200).json({
+        success: true,
+        message: "Orders fetched successfully for user email!",
+        data: result,
+      });
+    } else {
+      const result = await OrderServices.getAllOrderFromDb();
 
-    // Check if there is no order with this email
-    if (result.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Order not found",
+      // sending respons
+      res.status(200).json({
+        success: true,
+        message: "Order fetched successfully!",
+        data: result,
       });
     }
-
-    // Sending response
-    res.status(200).json({
-      success: true,
-      message: "Orders fetched successfully for user email!",
-      data: result,
-    });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -95,6 +87,5 @@ const deleteOrder = async (req: Request, res: Response) => {
 export const OrderController = {
   createOrder,
   getAllOrder,
-  getOrdersByUserEmail,
   deleteOrder,
 };

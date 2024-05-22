@@ -36,10 +36,20 @@ const deleteProductFromDb = (_id) => __awaiter(void 0, void 0, void 0, function*
     yield product_model_1.ProductModel.deleteOne({ _id });
     return null;
 });
+// get products by search term from db
+const getProductsBySearchTermFromDb = (searchTerm) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield product_model_1.ProductModel.find({
+        $text: {
+            $search: searchTerm,
+        },
+    });
+    return result;
+});
 exports.ProductServices = {
     createProductIntoDb,
     getAllProductFromDb,
     getASingleProductFromDb,
     updateProductIntoDb,
     deleteProductFromDb,
+    getProductsBySearchTermFromDb,
 };
