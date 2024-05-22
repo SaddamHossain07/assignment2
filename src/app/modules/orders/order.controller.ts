@@ -1,18 +1,25 @@
 import { Request, Response } from "express";
 import { OrderServices } from "./order.service";
 
-// create a order
+// create an order
 const createOrder = async (req: Request, res: Response) => {
   try {
     const orderData = req.body;
     const result = await OrderServices.createOrderIntoDb(orderData);
 
     // sending respons
-    res.status(200).json({
-      success: true,
-      message: "Order created successfully!",
-      data: result,
-    });
+    if (result.success) {
+      res.status(200).json({
+        success: true,
+        message: "Order created successfully!",
+        data: result.data,
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        message: result.message,
+      });
+    }
   } catch (error) {
     res.status(500).json({
       success: true,

@@ -1,10 +1,56 @@
+import { ProductModel } from "../products/product.model";
 import { TOrder } from "./order.interface";
 import { OrderModel } from "./order.model";
 
 // create a order into db
 const createOrderIntoDb = async (order: TOrder) => {
-  const result = await OrderModel.create(order);
-  return result;
+  try {
+    const productData = await ProductModel.findOne({ _id: order.productId });
+
+    // if the product is not exists
+    if (!productData) {
+      return {
+        success: false,
+        message: `Product with ID ${order.productId} not found`,
+      };
+    }
+
+    // if ordered quantity exceeds the available quantity in inventory
+    if (order.quantity > productData.inventory.quantity) {
+      return {
+        success: false,
+        message: "Insufficient stock",
+      };
+    }
+
+    // Update inventory quantity and inStock status
+    const updatedQuantity = productData.inventory.quantity - order.quantity;
+    const inStock = updatedQuantity > 0;
+    await ProductModel.updateOne(
+      { _id: order.productId },
+      {
+        $set: {
+          "inventory.quantity": updatedQuantity,
+          "inventory.inStock": inStock,
+        },
+      }
+    );
+
+    // Create order
+    const result = await OrderModel.create(order);
+
+    return {
+      success: true,
+      message: "Order created successfully",
+      data: result,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: "something went wrong while creating an order",
+      error: error,
+    };
+  }
 };
 
 // retrive all order from db
