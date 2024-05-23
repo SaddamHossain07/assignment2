@@ -8,14 +8,25 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProductController = void 0;
 const product_service_1 = require("./product.service");
+const product_validation_1 = __importDefault(require("./product.validation"));
+// Type guard to check if a value is a string
+function isString(value) {
+    return typeof value === "string";
+}
 // create a product
 const createProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const productData = req.body;
-        const result = yield product_service_1.ProductServices.createProductIntoDb(productData);
+        // data validation using zod
+        const zodParsedData = product_validation_1.default.parse(productData);
+        // sending data to db
+        const result = yield product_service_1.ProductServices.createProductIntoDb(zodParsedData);
         // sending respons
         res.status(200).json({
             success: true,
@@ -36,25 +47,33 @@ const getAllProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     try {
         if (req.query.searchTerm) {
             const { searchTerm } = req.query;
-            const result = yield product_service_1.ProductServices.getProductsBySearchTermFromDb(searchTerm);
-            // Check if result is empty
-            if (result.length === 0) {
-                return res.status(404).json({
-                    success: false,
-                    message: `No products found matching search term '${searchTerm}'`,
+            if (isString(searchTerm)) {
+                const result = yield product_service_1.ProductServices.getProductsBySearchTermFromDb(searchTerm);
+                // Check if result is empty
+                if (result.length === 0) {
+                    return res.status(404).json({
+                        success: false,
+                        message: `No products found matching search term '${searchTerm}'`,
+                    });
+                }
+                // Sending response
+                return res.status(200).json({
+                    success: true,
+                    message: `Products matching search term '${searchTerm}' fetched successfully!`,
+                    data: result,
                 });
             }
-            // Sending response
-            res.status(200).json({
-                success: true,
-                message: `Products matching search term '${searchTerm}' fetched successfully!`,
-                data: result,
-            });
+            else {
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid searchTerm parameter",
+                });
+            }
         }
         else {
             const result = yield product_service_1.ProductServices.getAllProductFromDb();
-            // sending respons
-            res.status(200).json({
+            // sending response
+            return res.status(200).json({
                 success: true,
                 message: "Products fetched successfully!",
                 data: result,
@@ -62,7 +81,7 @@ const getAllProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         }
     }
     catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: "Something went wrong",
             error: error,

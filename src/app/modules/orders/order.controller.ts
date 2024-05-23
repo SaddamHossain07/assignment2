@@ -1,11 +1,22 @@
 import { Request, Response } from "express";
 import { OrderServices } from "./order.service";
+import orderValidationSchema from "./order.validation";
+
+// Type guard to check if a value is a string
+function isString(value: unknown): value is string {
+  return typeof value === "string";
+}
 
 // create an order
 const createOrder = async (req: Request, res: Response) => {
   try {
     const orderData = req.body;
-    const result = await OrderServices.createOrderIntoDb(orderData);
+
+    // zod validation for creating order
+    const zodParsedOrderData = orderValidationSchema.parse(orderData);
+
+    // sending data to db
+    const result = await OrderServices.createOrderIntoDb(zodParsedOrderData);
 
     // sending respons
     if (result.success) {
@@ -35,34 +46,42 @@ const getAllOrder = async (req: Request, res: Response) => {
     // if query exists
     if (req.query.email) {
       const { email } = req.query;
-      const result = await OrderServices.getOrdersByEmailFromDb(email);
 
-      // Check if there is no order with this email
-      if (result.length === 0) {
-        return res.status(404).json({
+      if (isString(email)) {
+        const result = await OrderServices.getOrdersByEmailFromDb(email);
+
+        // Check if there is no order with this email
+        if (result.length === 0) {
+          return res.status(404).json({
+            success: false,
+            message: "Order not found",
+          });
+        }
+
+        // Sending response
+        return res.status(200).json({
+          success: true,
+          message: "Orders fetched successfully for user email!",
+          data: result,
+        });
+      } else {
+        return res.status(400).json({
           success: false,
-          message: "Order not found",
+          message: "Invalid email parameter",
         });
       }
-
-      // Sending response
-      res.status(200).json({
-        success: true,
-        message: "Orders fetched successfully for user email!",
-        data: result,
-      });
     } else {
       const result = await OrderServices.getAllOrderFromDb();
 
-      // sending respons
-      res.status(200).json({
+      // sending response
+      return res.status(200).json({
         success: true,
         message: "Order fetched successfully!",
         data: result,
       });
     }
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Something went wrong",
       error: error,

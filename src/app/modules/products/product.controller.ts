@@ -1,11 +1,22 @@
 import { Request, Response } from "express";
 import { ProductServices } from "./product.service";
+import productValidationSchema from "./product.validation";
+
+// Type guard to check if a value is a string
+function isString(value: unknown): value is string {
+  return typeof value === "string";
+}
 
 // create a product
 const createProduct = async (req: Request, res: Response) => {
   try {
     const productData = req.body;
-    const result = await ProductServices.createProductIntoDb(productData);
+
+    // data validation using zod
+    const zodParsedData = productValidationSchema.parse(productData);
+
+    // sending data to db
+    const result = await ProductServices.createProductIntoDb(zodParsedData);
 
     // sending respons
     res.status(200).json({
@@ -27,36 +38,44 @@ const getAllProduct = async (req: Request, res: Response) => {
   try {
     if (req.query.searchTerm) {
       const { searchTerm } = req.query;
-      const result = await ProductServices.getProductsBySearchTermFromDb(
-        searchTerm
-      );
 
-      // Check if result is empty
-      if (result.length === 0) {
-        return res.status(404).json({
+      if (isString(searchTerm)) {
+        const result = await ProductServices.getProductsBySearchTermFromDb(
+          searchTerm
+        );
+
+        // Check if result is empty
+        if (result.length === 0) {
+          return res.status(404).json({
+            success: false,
+            message: `No products found matching search term '${searchTerm}'`,
+          });
+        }
+
+        // Sending response
+        return res.status(200).json({
+          success: true,
+          message: `Products matching search term '${searchTerm}' fetched successfully!`,
+          data: result,
+        });
+      } else {
+        return res.status(400).json({
           success: false,
-          message: `No products found matching search term '${searchTerm}'`,
+          message: "Invalid searchTerm parameter",
         });
       }
-
-      // Sending response
-      res.status(200).json({
-        success: true,
-        message: `Products matching search term '${searchTerm}' fetched successfully!`,
-        data: result,
-      });
     } else {
       const result = await ProductServices.getAllProductFromDb();
 
-      // sending respons
-      res.status(200).json({
+      // sending response
+      return res.status(200).json({
         success: true,
         message: "Products fetched successfully!",
         data: result,
       });
     }
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Something went wrong",
       error: error,
